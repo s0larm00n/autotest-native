@@ -31,10 +31,13 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.named<Test>("test") {
+    val suffix =
+        if(org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) "dll" else "so"
+
     useJUnitPlatform()
     systemProperty("petclinic.url", "localhost:8080")
     jvmArgs = listOf(
-        "-agentpath:C:\\Users\\Kristina_Smirnova\\Documents\\drill-repos\\auto\\build\\bin\\nativeCore\\testDebugShared\\test.dll=" +
+        "-agentpath:C:\\Users\\Kristina_Smirnova\\Documents\\drill-repos\\auto\\build\\bin\\nativeCore\\testDebugShared\\test.$suffix=" +
                 "runtimePath=C:\\Users\\Kristina_Smirnova\\Documents\\drill-repos\\auto\\runtime\\build\\libs," +
                 "adminHost=localhost," +
                 "adminPort=8090," +
