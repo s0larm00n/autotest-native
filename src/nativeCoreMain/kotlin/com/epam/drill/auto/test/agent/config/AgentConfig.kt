@@ -1,7 +1,10 @@
 package com.epam.drill.auto.test.agent.config
 
+import com.epam.drill.auto.test.agent.*
+import com.epam.drill.jvmapi.*
 import com.epam.drill.jvmapi.gen.*
 import kotlinx.cinterop.*
+import kotlin.native.concurrent.*
 
 data class AgentConfig(
     val agentId: String,
@@ -11,7 +14,7 @@ data class AgentConfig(
     val runtimePath: String,
     val debugLog: Boolean,
     val terminalOutput: Boolean,
-    val loggerPath: String?
+    val loggerPath: String
 )
 
 const val WRONG_PARAMS = "Agent parameters are not specified correctly."
@@ -25,7 +28,7 @@ fun String?.toAgentParams() = this.asParams().let { params ->
         runtimePath = params["runtimePath"] ?: error(WRONG_PARAMS),
         debugLog = params["debugLog"]?.toBoolean() ?: false,
         terminalOutput = params["terminalOutput"]?.toBoolean() ?: false,
-        loggerPath = params["loggerPath"]
+        loggerPath = params["loggerPath"] ?: "logs"
     )
 }
 
@@ -43,3 +46,32 @@ fun initAgentGlobals(vmPointer: CPointer<JavaVMVar>) {
     saveVmToGlobal(vmPointer)
 }
 
+fun initAgent(additionalClassesPath: String) = memScoped {
+    setUnhandledExceptionHook({ thr: Throwable ->
+        println("Unhandled event $thr")
+    }.freeze())
+    val alloc = alloc<jvmtiCapabilities>()
+    alloc.can_retransform_classes = 1.toUInt()
+    alloc.can_retransform_any_class = 1.toUInt()
+    alloc.can_generate_native_method_bind_events = 1.toUInt()
+    alloc.can_maintain_original_method_order = 1.toUInt()
+    AddCapabilities(alloc.ptr)
+    val cl = "$additionalClassesPath/runtime-all.jar"
+    AddToBootstrapClassLoaderSearch(cl)
+    callbackRegister()
+}
+
+@CName("jvmtii")
+fun jvmtii(): CPointer<jvmtiEnvVar>? {
+    return com.epam.drill.jvmapi.jvmtii()
+}
+
+@CName("checkEx")
+fun checkEx(errCode: jvmtiError, funName: String): jvmtiError {
+    return com.epam.drill.jvmapi.checkEx(errCode, funName)
+}
+
+@CName("currentEnvs")
+fun currentEnvs(): JNIEnvPointer {
+    return com.epam.drill.jvmapi.currentEnvs()
+}

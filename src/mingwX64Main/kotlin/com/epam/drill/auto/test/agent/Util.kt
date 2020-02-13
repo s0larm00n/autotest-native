@@ -18,12 +18,9 @@ private fun openSocket(address: Address): ULong {
     val sfd = platform.posix.socket(address.aiFamily, address.aiSockType, address.aiProtocol)
     val result = platform.posix.connect(sfd, address.aiAddr, address.aiAddrLen)
     if (result != 0) {
-        Logger.logError("Connection failed: $result\n")
         freeaddrinfo(address.ptr[0])
         close(sfd.convert())
         error("Failed to establish connection")
-    } else {
-        Logger.logInfo("Websocket connected")
     }
     return sfd
 }
@@ -36,7 +33,7 @@ private fun resolve(host: String, port: String): Address = memScoped {
     hints.ai_flags = AI_PASSIVE
     val addressPtr = allocArray<LPADDRINFOVar>(1)
     val result = platform.windows.getaddrinfo(host, port, hints.ptr, addressPtr)
-    if (result != 0) Logger.logError("Failed to resolve address: $host:$port")
+    if (result != 0) error("Failed to resolve address: $host:$port")
     Address(addressPtr)
 }
 

@@ -2,22 +2,22 @@ package com.epam.drill.auto.test.agent
 
 import kotlinx.cinterop.*
 import platform.posix.*
+import kotlin.native.concurrent.*
 
 const val INFO = "INFO"
 const val ERROR = "ERROR"
 
-//TODO: remove default debug logging
+class Logger {
+    private val bufferSize = 128
+    private val loggerFileName = "main.txt"
+    var debugMode: Boolean = true
+    var terminalOutput: Boolean = false
+    var loggerDirPath: String = ""
 
-object Logger {
-    private var debugMode: Boolean = true
-    private var terminalOutput: Boolean = false
-    private var loggerDirPath: String = "logs"
-    private const val bufferSize = 128
-    private const val loggerFileName = "main.txt"
-    private var loggerFilePath = ""
+    val loggerFilePath: String
+        get() = "$loggerDirPath/$loggerFileName"
 
-    init {
-        loggerFilePath = "$loggerDirPath/$loggerFileName"
+    fun init() {
         createDirectory(loggerDirPath)
         val fd = fopen(loggerFilePath, "w") ?: error("Failed to open logger dir")
         fclose(fd)
@@ -55,3 +55,18 @@ object Logger {
     }
 
 }
+
+fun logInfo(message: String) = log { logger.logInfo(message) }
+
+fun logError(message: String) = log { logger.logError(message) }
+
+inline fun <reified T> log(noinline what: Logger.() -> T) =
+    loggerWorker.execute(TransferMode.UNSAFE, { what }) {
+        it(logger)
+    }.result
+
+@SharedImmutable
+val loggerWorker = Worker.start(true)
+
+@ThreadLocal
+val logger = Logger()

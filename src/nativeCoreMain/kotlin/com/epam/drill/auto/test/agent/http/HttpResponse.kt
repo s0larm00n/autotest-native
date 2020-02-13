@@ -11,7 +11,7 @@ class HttpResponse(val raw: String) {
 
     init {
         val contentLength = headers["Content-Length"]?.toInt()
-            ?: 0.apply { Logger.logInfo("No Content-Length header in response - assuming body's length 0") }
+            ?: 0.apply { logInfo("No Content-Length header in response - assuming body's length 0") }
         body = raw.substringAfter("\r\n\r\n").substring(0 until contentLength)
     }
 }

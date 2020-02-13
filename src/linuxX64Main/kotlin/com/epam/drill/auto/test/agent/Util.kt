@@ -16,12 +16,9 @@ private fun MemScope.openSocket(address: Address): ULong {
     val sfd = socket(address.aiFamily, address.aiSockType, address.aiProtocol)
     val result = connect(sfd, address.aiAddr, address.aiAddrLen.convert())
     if (result != 0) {
-        Logger.logError("Connection failed: $result\n")
         freeaddrinfo(address.ptr?.getPointer(this)?.pointed?.value)
         close(sfd.convert())
         error("Failed to establish connection")
-    } else {
-        Logger.logInfo("Websocket connected")
     }
     return sfd.convert()
 }
@@ -35,7 +32,7 @@ private fun MemScope.resolve(host: String, port: String): Address {
     val addressPtr = allocArray<addrinfo>(1)
     val ref = cValuesOf(addressPtr).getPointer(this)
     val result = getaddrinfo(host, port, hints.ptr, ref)
-    if (result != 0) Logger.logError("Failed to resolve address: $host:$port")
+    if (result != 0) error("Failed to resolve address: $host:$port")
     return Address(ref, this)
 }
 

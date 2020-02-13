@@ -5,10 +5,8 @@ package com.epam.drill.auto.test.agent
 import com.epam.drill.auto.test.agent.actions.*
 import com.epam.drill.auto.test.agent.instrumenting.*
 import com.epam.drill.hook.http.*
-import com.epam.drill.jvmapi.*
 import com.epam.drill.jvmapi.gen.*
 import kotlinx.cinterop.*
-import kotlin.native.concurrent.*
 
 @CName("enableJvmtiEventVmDeath")
 fun enableJvmtiEventVmDeath(thread: jthread? = null) {
@@ -16,41 +14,9 @@ fun enableJvmtiEventVmDeath(thread: jthread? = null) {
     gdata?.pointed?.IS_JVMTI_EVENT_VM_DEATH = true
 }
 
-@CName("jvmtii")
-fun jvmtii(): CPointer<jvmtiEnvVar>? {
-    return com.epam.drill.jvmapi.jvmtii()
-}
-
-@CName("checkEx")
-fun checkEx(errCode: jvmtiError, funName: String): jvmtiError {
-    return com.epam.drill.jvmapi.checkEx(errCode, funName)
-}
-
-@CName("currentEnvs")
-fun currentEnvs(): JNIEnvPointer {
-    return com.epam.drill.jvmapi.currentEnvs()
-}
-
 @Suppress("UNUSED_PARAMETER")
 fun vmDeathEvent(jvmtiEnv: CPointer<jvmtiEnvVar>?, jniEnv: CPointer<JNIEnvVar>?) {
-    Logger.logInfo("vmDeathEvent")
-}
-
-fun initAgent(additionalClassesPath: String) = memScoped {
-    Logger.logInfo("Initializing agent...")
-    setUnhandledExceptionHook({ thr: Throwable ->
-        println("Unhandled event $thr")
-    }.freeze())
-    val alloc = alloc<jvmtiCapabilities>()
-    alloc.can_retransform_classes = 1.toUInt()
-    alloc.can_retransform_any_class = 1.toUInt()
-    alloc.can_generate_native_method_bind_events = 1.toUInt()
-    alloc.can_maintain_original_method_order = 1.toUInt()
-    AddCapabilities(alloc.ptr)
-    val cl = "$additionalClassesPath/runtime-all.jar"
-    AddToBootstrapClassLoaderSearch(cl)
-    callbackRegister()
-    Logger.logInfo("Agent initialization completed!")
+    logInfo("vmDeathEvent")
 }
 
 fun callbackRegister() {
@@ -63,7 +29,6 @@ fun callbackRegister() {
     gjavaVMGlob?.pointed?.callbackss?.VMDeath = staticCFunction(::vmDeathEvent)
     enableJvmtiEventVmDeath()
     enableJvmtiEventVmInit()
-    enableJvmtiEventClassFileLoadHook()
     enableJvmtiEventNativeMethodBind()
 }
 
@@ -87,7 +52,9 @@ fun enableJvmtiEventClassFileLoadHook(thread: jthread? = null) {
 
 @CName("jvmtiEventVMInitEvent")
 fun jvmtiEventVMInitEvent(env: CPointer<jvmtiEnvVar>?, jniEnv: CPointer<JNIEnvVar>?, thread: jthread?) {
-    Logger.logInfo("Init event")
+    logInfo("Init event")
+    initRuntimeIfNeeded()
+    enableJvmtiEventClassFileLoadHook()
     configureHooks()
 }
 
@@ -112,5 +79,5 @@ fun nativeMethodBind(
     address: COpaquePointer,
     newAddressPtr: CPointer<COpaquePointerVar>
 ) {
-    Logger.logInfo("Method bind event")
+    logInfo("Method bind event")
 }

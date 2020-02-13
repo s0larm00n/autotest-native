@@ -21,18 +21,18 @@ fun classFileLoadHookEvent(
 ) {
     val className = kClassName?.toKString()
     if (notSuitableClass(loader, protection_domain, className, classData)) return
-    Logger.logInfo("Transforming class: $className")
+    logInfo("Scanning class: $className")
     val instrumentedBytes =
         transform(loader, className!!) ?: return
     val instrumentedSize = instrumentedBytes.size
-    Logger.logInfo("Applying instrumenting (old: $classDataLen to new: $instrumentedSize)")
+    logInfo("Applying instrumenting (old: $classDataLen to new: $instrumentedSize)")
     Allocate(instrumentedSize.toLong(), newData)
     val newBytes = newData!!.pointed.value!!
     instrumentedBytes.forEachIndexed { index, byte ->
         newBytes[index] = byte.toUByte()
     }
     newClassDataLen!!.pointed.value = instrumentedSize
-    Logger.logInfo("Successfully instrumented class $className")
+    logInfo("Successfully instrumented class $className")
 }
 
 private fun notSuitableClass(
@@ -41,7 +41,7 @@ private fun notSuitableClass(
     className: String?,
     classData: CPointer<UByteVar>?
 ): Boolean =
-    loader == null || protection_domain == null || className == null || classData == null || className.startsWith("worker/org/gradle/")
+    loader == null || protection_domain == null || className == null || classData == null
 
 
 val transformerClass: jclass

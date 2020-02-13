@@ -27,10 +27,6 @@ dependencies{
     testImplementation(kotlin("stdlib-jdk8"))
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
 tasks.named<Test>("test") {
     val suffix =
         if(org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) "dll" else "so"

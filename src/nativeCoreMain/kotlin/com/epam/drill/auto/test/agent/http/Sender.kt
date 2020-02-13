@@ -34,16 +34,17 @@ object Sender {
         responseBufferSize: Int = 4096
     ): HttpResponse = memScoped {
         val sfd = connectSocket(host, port)
+        logInfo("Websocket connected")
         val requestLength = request.length
-        Logger.logInfo("Attempting to send request of length $requestLength")
+        logInfo("Attempting to send request of length $requestLength")
         val written = sendMessage(sfd, request, requestLength)
-        Logger.logInfo("Wrote $written of $requestLength expected; error: ${getSocketError()}")
+        logInfo("Wrote $written of $requestLength expected; error: ${getSocketError()}")
         val buffer = " ".repeat(responseBufferSize).cstr.getPointer(this)
         val read = recv(sfd.convert(), buffer, responseBufferSize.convert(), 0)
-        Logger.logInfo("Read $read of $responseBufferSize possible")
+        logInfo("Read $read of $responseBufferSize possible")
         val result = buffer.toKString()
         close(sfd.convert())
-        Logger.logInfo("Closed socket connection")
+        logInfo("Closed socket connection")
         return HttpResponse(result)
     }
 

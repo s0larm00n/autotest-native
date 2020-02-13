@@ -14,21 +14,21 @@ class SessionController {
     lateinit var agentConfig: AgentConfig
 
     fun startSession() {
-        Logger.logInfo("Attempting to start a Drill4J test session...")
+        logInfo("Attempting to start a Drill4J test session...")
         val payload = StartSession.serializer() stringify StartSession()
         val response = dispatchAction(payload)
-        Logger.logInfo("Received response: ${response.raw}")
+        logInfo("Received response: ${response.raw}")
         val startSessionResponse = StartSessionResponse.serializer() parse response.body
         sessionId = startSessionResponse.payload.sessionId
-        Logger.logInfo("Started a test session with ID $sessionId")
+        logInfo("Started a test session with ID $sessionId")
     }
 
     fun stopSession() {
-        Logger.logInfo("Attempting to stop a Drill4J test session...")
+        logInfo("Attempting to stop a Drill4J test session...")
         val payload = StopSession.serializer() stringify stopAction(sessionId)
         val response = dispatchAction(payload)
-        Logger.logInfo("Received response: ${response.raw}")
-        Logger.logInfo("Stopped a test session with ID $sessionId")
+        logInfo("Received response: ${response.raw}")
+        logInfo("Stopped a test session with ID $sessionId")
     }
 
     private fun dispatchAction(payload: String): HttpResponse {
