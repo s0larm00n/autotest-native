@@ -19,11 +19,12 @@ repositories {
 }
 
 dependencies{
+    implementation(kotlin("stdlib-jdk8"))
     api("org.javassist:javassist:$javassistVersion")
     testImplementation("com.google.code.gson:gson:$gsonVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$jupiterVersion")
     testImplementation("io.rest-assured:rest-assured:$restAssuredVersion")
-    implementation(kotlin("stdlib-jdk8"))
+    testImplementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.withType<KotlinCompile> {
@@ -33,16 +34,21 @@ tasks.withType<KotlinCompile> {
 tasks.named<Test>("test") {
     val suffix =
         if(org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) "dll" else "so"
-
+    val agentPath = "${rootDir.absolutePath}/build/bin/nativeCore/testDebugShared/test.$suffix"
+    val runtimePath = "${rootDir.absolutePath}/runtime/build/libs"
     useJUnitPlatform()
     systemProperty("petclinic.url", "localhost:8080")
     jvmArgs = listOf(
-        "-agentpath:C:\\Users\\Kristina_Smirnova\\Documents\\drill-repos\\auto\\build\\bin\\nativeCore\\testDebugShared\\test.$suffix=" +
-                "runtimePath=C:\\Users\\Kristina_Smirnova\\Documents\\drill-repos\\auto\\runtime\\build\\libs," +
+        "-agentpath:$agentPath=" +
+                "runtimePath=$runtimePath," +
                 "adminHost=localhost," +
                 "adminPort=8090," +
                 "agentId=Petclinic," +
                 "pluginId=test-to-code-mapping," +
                 "debugLog=true"
     )
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
 }

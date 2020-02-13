@@ -1,6 +1,6 @@
 package com.epam.drill.auto.test.agent.http
 
-import com.epam.drill.auto.test.agent.Logger
+import com.epam.drill.auto.test.agent.*
 
 class HttpResponse(val raw: String) {
     val headers = raw.lines().map { line ->

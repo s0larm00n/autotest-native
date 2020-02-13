@@ -2,14 +2,13 @@
 
 package com.epam.drill.auto.test.agent
 
-import com.epam.drill.auto.test.agent.actions.sessionController
-import com.epam.drill.auto.test.agent.instrumenting.classFileLoadHookEvent
-import com.epam.drill.hook.http.addHttpWriteCallback
-import com.epam.drill.hook.http.configureHttpHooks
-import com.epam.drill.jvmapi.JNIEnvPointer
+import com.epam.drill.auto.test.agent.actions.*
+import com.epam.drill.auto.test.agent.instrumenting.*
+import com.epam.drill.hook.http.*
+import com.epam.drill.jvmapi.*
 import com.epam.drill.jvmapi.gen.*
 import kotlinx.cinterop.*
-import kotlin.native.concurrent.freeze
+import kotlin.native.concurrent.*
 
 @CName("enableJvmtiEventVmDeath")
 fun enableJvmtiEventVmDeath(thread: jthread? = null) {
@@ -38,20 +37,20 @@ fun vmDeathEvent(jvmtiEnv: CPointer<jvmtiEnvVar>?, jniEnv: CPointer<JNIEnvVar>?)
 }
 
 fun initAgent(additionalClassesPath: String) = memScoped {
-    setUnhandledExceptionHook({ x: Throwable ->
-        println("unhandled event $x")
+    Logger.logInfo("Initializing agent...")
+    setUnhandledExceptionHook({ thr: Throwable ->
+        println("Unhandled event $thr")
     }.freeze())
-
     val alloc = alloc<jvmtiCapabilities>()
     alloc.can_retransform_classes = 1.toUInt()
     alloc.can_retransform_any_class = 1.toUInt()
     alloc.can_generate_native_method_bind_events = 1.toUInt()
     alloc.can_maintain_original_method_order = 1.toUInt()
     AddCapabilities(alloc.ptr)
-
     val cl = "$additionalClassesPath/runtime-all.jar"
     AddToBootstrapClassLoaderSearch(cl)
     callbackRegister()
+    Logger.logInfo("Agent initialization completed!")
 }
 
 fun callbackRegister() {
@@ -95,9 +94,7 @@ fun jvmtiEventVMInitEvent(env: CPointer<jvmtiEnvVar>?, jniEnv: CPointer<JNIEnvVa
 fun configureHooks() {
     configureHttpHooks()
     addHttpWriteCallback {
-        val (lastTestName, sessionId) = sessionController {
-            (testName ?: "") to sessionId
-        }
+        val (lastTestName, sessionId) = sessionController { testName to sessionId }
         println("Adding hooks: $lastTestName to $sessionId")
         mapOf(
             "drill-test-name" to lastTestName,

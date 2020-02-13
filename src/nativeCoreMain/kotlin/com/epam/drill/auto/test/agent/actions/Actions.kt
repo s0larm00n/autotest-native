@@ -1,6 +1,6 @@
 package com.epam.drill.auto.test.agent.actions
 
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
 
 enum class Actions {
     START,
@@ -24,3 +24,7 @@ data class StopSession(val type: String = Actions.STOP.name, val payload: StopPa
 
 @Serializable
 data class StopPayload(val sessionId: String)
+
+fun stopAction(sessionId: String) = StopSession(
+    payload = StopPayload(sessionId)
+)

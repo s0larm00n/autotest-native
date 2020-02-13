@@ -1,9 +1,8 @@
 package com.epam.drill.auto.test.agent.config
 
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
-import kotlin.native.concurrent.SharedImmutable
+import kotlinx.serialization.*
+import kotlinx.serialization.json.*
+import kotlin.native.concurrent.*
 
 @SharedImmutable
 val json = Json(JsonConfiguration.Stable)

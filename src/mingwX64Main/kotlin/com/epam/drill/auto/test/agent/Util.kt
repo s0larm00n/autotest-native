@@ -1,14 +1,15 @@
 package com.epam.drill.auto.test.agent
 
+import kotlinx.cinterop.*
 import platform.posix.*
 import platform.posix.WSAEWOULDBLOCK
 import platform.windows.*
 
-fun createDirectory(path: String){
+fun createDirectory(path: String) {
     mkdir(path)
 }
 
-fun connectSocket(host: String, port: String): Ulong {
+fun connectSocket(host: String, port: String): ULong {
     val address = resolve(host, port)
     return openSocket(address)
 }
@@ -57,4 +58,4 @@ fun getSocketError(): Int {
 }
 
 fun sendMessage(sfd: ULong, request: String, requestLength: Int): ssize_t =
-    send(sfd, request, requestLength, 0)
+    send(sfd, request, requestLength, 0).convert()

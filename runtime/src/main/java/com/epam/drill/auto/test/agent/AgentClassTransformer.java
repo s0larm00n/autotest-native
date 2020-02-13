@@ -10,7 +10,7 @@ public class AgentClassTransformer {
     private static final String GLOBAL_SPY = "com.epam.drill.auto.test.agent.GlobalSpy.self()";
 
     public static JByteArray transform(String className, ClassLoader classLoader) {
-        if (className != null && classLoader != null) {
+        try {
             ClassPool pool = ClassPool.getDefault();
             pool.appendClassPath(new LoaderClassPath(classLoader));
             CtClass ctClass = null;
@@ -18,28 +18,30 @@ public class AgentClassTransformer {
                 ctClass = pool.get(formatClassName(className));
 
             } catch (NotFoundException nfe) {
-                System.out.println("Class not found by given class loader!");
+                System.out.println("Class " + className + " not found by given class loader!");
             }
-            byte[] result = insertTestNames(filterMethods(ctClass), ctClass);
+            byte[] result = insertTestNames(ctClass);
             if (result != null) {
                 return new JByteArray(result);
             }
+            return null;
+        } catch (Exception e) {
+            System.out.println("Unexpected exception: " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
-    private static byte[] insertTestNames(List<CtMethod> ctMethods, CtClass cc) {
+    private static byte[] insertTestNames(CtClass cc) {
+        List<CtMethod> ctMethods = filterMethods(cc);
+        if (ctMethods.isEmpty()) return null;
         byte[] result = null;
-        if (!ctMethods.isEmpty()) {
-            try {
-                for (CtMethod method : ctMethods) {
-                    method.insertBefore(GLOBAL_SPY + ".setTestName(\"" + method.getName() + "\");");
-                }
-                result = cc.toBytecode();
-            } catch (CannotCompileException | IOException cce) {
-                System.out.println("Could not compile class: " + cc.getName());
+        try {
+            for (CtMethod method : ctMethods) {
+                method.insertBefore(GLOBAL_SPY + ".setTestName(\"" + method.getName() + "\");");
             }
-
+            result = cc.toBytecode();
+        } catch (CannotCompileException | IOException cce) {
+            System.out.println("Could not compile class: " + cc.getName());
         }
         return result;
     }
@@ -47,10 +49,8 @@ public class AgentClassTransformer {
     private static List<CtMethod> filterMethods(CtClass ctClass) {
         ArrayList<CtMethod> ctMethods = new ArrayList<>();
         for (CtMethod m : ctClass.getMethods()) {
-            System.out.println("METHOD: " + m.getLongName());
             try {
                 for (Object an : m.getAnnotations()) {
-                    System.out.println("ANNOTATION: " + an.toString());
                     if (an.toString().startsWith("@org.junit.jupiter.api.Test") ||
                             an.toString().startsWith("@org.junit.jupiter.params.ParameterizedTest")) {
                         ctMethods.add(m);
@@ -58,7 +58,7 @@ public class AgentClassTransformer {
                     }
                 }
             } catch (ClassNotFoundException cnfe) {
-                System.out.println("Could not find annotations for " + m.getLongName());
+                //System.out.println("Could not find annotations for " + m.getLongName());
             }
         }
         return ctMethods;

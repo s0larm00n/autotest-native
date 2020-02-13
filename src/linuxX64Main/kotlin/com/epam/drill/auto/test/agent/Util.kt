@@ -3,7 +3,7 @@ package com.epam.drill.auto.test.agent
 import kotlinx.cinterop.*
 import platform.posix.*
 
-fun createDirectory(path: String){
+fun createDirectory(path: String) {
     mkdir(path, 511)
 }
 

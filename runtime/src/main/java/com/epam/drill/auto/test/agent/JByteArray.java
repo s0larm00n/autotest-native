@@ -7,5 +7,6 @@ public class JByteArray {
     public JByteArray(byte[] initial) {
         bytes = initial;
         size = bytes.length;
+        System.out.println("BYTES: " + size);
     }
 }

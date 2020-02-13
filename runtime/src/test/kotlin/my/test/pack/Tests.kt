@@ -24,7 +24,8 @@ class Tests {
                 t.responseHeaders.add(
                     testNameHeaderName, t.requestHeaders.getFirst(
                         testNameHeaderName
-                    ) ?: "empty")
+                    ) ?: "empty"
+                )
                 t.sendResponseHeaders(200, response.toByteArray().size.toLong())
                 val os = t.responseBody
                 os.write(response.toByteArray())

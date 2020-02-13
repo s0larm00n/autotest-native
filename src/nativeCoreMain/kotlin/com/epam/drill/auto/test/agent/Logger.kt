@@ -1,11 +1,7 @@
 package com.epam.drill.auto.test.agent
 
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.memScoped
-import platform.posix.FILE
-import platform.posix.fclose
-import platform.posix.fopen
-import platform.posix.fprintf
+import kotlinx.cinterop.*
+import platform.posix.*
 
 const val INFO = "INFO"
 const val ERROR = "ERROR"
@@ -23,7 +19,8 @@ object Logger {
     init {
         loggerFilePath = "$loggerDirPath/$loggerFileName"
         createDirectory(loggerDirPath)
-        fopen(loggerFilePath, "w") ?: error("Failed to open logger dir")
+        val fd = fopen(loggerFilePath, "w") ?: error("Failed to open logger dir")
+        fclose(fd)
     }
 
     private fun openFile(): CPointer<FILE>? {
