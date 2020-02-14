@@ -1,4 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.*
+import org.apache.tools.ant.taskdefs.condition.*
 
 plugins {
     id("com.github.johnrengelman.shadow") version "5.1.0"
@@ -18,7 +19,7 @@ repositories {
     mavenCentral()
 }
 
-dependencies{
+dependencies {
     implementation(kotlin("stdlib-jdk8"))
     api("org.javassist:javassist:$javassistVersion")
     testImplementation("com.google.code.gson:gson:$gsonVersion")
@@ -28,8 +29,7 @@ dependencies{
 }
 
 tasks.named<Test>("test") {
-    val suffix =
-        if(org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)) "dll" else "so"
+    val suffix = if (Os.isFamily(Os.FAMILY_WINDOWS)) "dll" else "so"
     val agentPath = "${rootDir.absolutePath}/build/bin/nativeCore/testDebugShared/test.$suffix"
     val runtimePath = "${rootDir.absolutePath}/runtime/build/libs"
     useJUnitPlatform()
@@ -41,6 +41,7 @@ tasks.named<Test>("test") {
                 "adminPort=8090," +
                 "agentId=Petclinic," +
                 "pluginId=test-to-code-mapping," +
+                "serviceGroupId=petclinic-services" +
                 "trace=false," +
                 "debug=true," +
                 "info=true," +

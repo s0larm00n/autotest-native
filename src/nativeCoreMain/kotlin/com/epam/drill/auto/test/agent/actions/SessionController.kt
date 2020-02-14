@@ -15,6 +15,11 @@ class SessionController {
     val testName = AtomicReference("")
     val sessionId = AtomicReference("")
 
+    private val dispatchActionPath: String
+        get() = if (agentConfig.value.serviceGroup.isBlank()) {
+            "/api/agents/${agentConfig.value.agentId}/${agentConfig.value.pluginId}/dispatch-action"
+        } else "/api/service-group/${agentConfig.value.serviceGroup}/plugin/${agentConfig.value.pluginId}/dispatch-action"
+
     fun startSession() {
         mainLogger.debug { "Attempting to start a Drill4J test session..." }
         val payload = StartSession.serializer() stringify StartSession()
@@ -34,8 +39,6 @@ class SessionController {
     }
 
     private fun dispatchAction(payload: String): HttpResponse {
-        val dispatchActionPath =
-            "/api/agents/${agentConfig.value.agentId}/${agentConfig.value.pluginId}/dispatch-action"
         val token = getToken()
         return Sender.post(
             agentConfig.value.adminHost,

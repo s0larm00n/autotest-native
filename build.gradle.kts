@@ -1,4 +1,6 @@
 import org.apache.tools.ant.taskdefs.condition.Os.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.dsl.*
 
 plugins {
     kotlin("multiplatform") version "1.3.60"
@@ -64,12 +66,12 @@ kotlin {
     }
 }
 
-fun org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension.currentTarget(
+fun KotlinMultiplatformExtension.currentTarget(
     name: String,
-    config: org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget.() -> Unit = {}
-): org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget {
+    config: KotlinNativeTarget.() -> Unit = {}
+): KotlinNativeTarget {
     val createdTarget =
-        (presets.getByName(presetName) as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTestsPreset).createTarget(
+        (presets.getByName(presetName) as KotlinNativeTargetWithTestsPreset).createTarget(
             name
         )
     targets.add(createdTarget)

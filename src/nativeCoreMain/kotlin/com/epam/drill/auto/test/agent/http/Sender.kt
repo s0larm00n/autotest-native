@@ -32,7 +32,7 @@ object Sender {
         port: String,
         request: String,
         responseBufferSize: Int = 4096
-    ): HttpResponse = memScoped{
+    ): HttpResponse = memScoped {
         val sfd = connect(host, port)
         mainLogger.debug { "Websocket connected" }
         val requestLength = request.length

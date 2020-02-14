@@ -47,14 +47,13 @@ public class AgentClassTransformer {
         for (CtMethod m : ctClass.getMethods()) {
             try {
                 for (Object an : m.getAnnotations()) {
-                    if (an.toString().startsWith("@org.junit.jupiter.api.Test") ||
-                            an.toString().startsWith("@org.junit.jupiter.params.ParameterizedTest")) {
+                    if (annotationSupported(an.toString())) {
                         ctMethods.add(m);
                         break;
                     }
                 }
             } catch (ClassNotFoundException cnfe) {
-                //System.out.println("Could not find annotations for " + m.getLongName());
+                //TODO: process if needed
             }
         }
         return ctMethods;
@@ -62,6 +61,12 @@ public class AgentClassTransformer {
 
     private static String formatClassName(String className) {
         return className.replace("/", ".");
+    }
+
+    private static Boolean annotationSupported(String annotation) {
+        return annotation.startsWith("@org.junit.jupiter.api.Test") ||
+                annotation.startsWith("@org.junit.jupiter.params.ParameterizedTest") ||
+                annotation.startsWith("@org.testng.annotations.Test");
     }
 
 }
