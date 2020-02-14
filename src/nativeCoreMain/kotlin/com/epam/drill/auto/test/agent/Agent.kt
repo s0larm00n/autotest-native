@@ -24,7 +24,7 @@ fun agentOnLoad(vmPointer: CPointer<JavaVMVar>, options: String, reservedPtr: Lo
         sessionController.agentConfig.value = config.freeze()
         sessionController.startSession()
     } catch (ex: Throwable) {
-        mainLogger.error { "Can't lopad the agent. Reason: ${ex.message}" }
+        mainLogger.error { "Can't load the agent. Reason: ${ex.message}" }
     }
     JNI_OK
 }
