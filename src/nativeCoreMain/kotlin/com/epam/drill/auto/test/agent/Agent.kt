@@ -6,7 +6,13 @@ import com.epam.drill.auto.test.agent.actions.*
 import com.epam.drill.auto.test.agent.config.*
 import com.epam.drill.hook.http.*
 import com.epam.drill.jvmapi.gen.*
+import com.epam.drill.logger.*
 import kotlinx.cinterop.*
+import mu.*
+import kotlin.native.concurrent.*
+
+@SharedImmutable
+val mainLogger = KotlinLogging.logger("AutoTestAgentLogger")
 
 @CName("Agent_OnLoad")
 fun agentOnLoad(vmPointer: CPointer<JavaVMVar>, options: String, reservedPtr: Long): jint = memScoped {
@@ -14,18 +20,11 @@ fun agentOnLoad(vmPointer: CPointer<JavaVMVar>, options: String, reservedPtr: Lo
         val config = options.toAgentParams()
         initAgentGlobals(vmPointer)
         initAgent(config.runtimePath)
-        log {
-            debugMode = config.debugLog
-            terminalOutput = config.terminalOutput
-            loggerDirPath = config.loggerPath
-            init()
-        }
-        sessionController {
-            agentConfig = config
-            startSession()
-        }
+        logConfig.value = LoggerConfig(config.trace, config.debug, config.info, config.warn).freeze()
+        sessionController.agentConfig.value = config.freeze()
+        sessionController.startSession()
     } catch (ex: Throwable) {
-        logError("Can't load the agent. Reason: ${ex.message}")
+        mainLogger.error { "Can't lopad the agent. Reason: ${ex.message}" }
     }
     JNI_OK
 }
@@ -33,10 +32,10 @@ fun agentOnLoad(vmPointer: CPointer<JavaVMVar>, options: String, reservedPtr: Lo
 @CName("Agent_OnUnload")
 fun agentOnUnload(vmPointer: CPointer<JavaVMVar>) {
     try {
-        logInfo("Shutting the agent down")
+        mainLogger.info { "Shutting the agent down" }
         removeHttpHook()
-        sessionController { stopSession() }
+        sessionController.stopSession()
     } catch (ex: Throwable) {
-        logError("Failed unloading the agent properly. Ex: ${ex.message}")
+        mainLogger.error { "Failed unloading the agent properly. Ex: ${ex.message}" }
     }
 }

@@ -41,7 +41,10 @@ tasks.named<Test>("test") {
                 "adminPort=8090," +
                 "agentId=Petclinic," +
                 "pluginId=test-to-code-mapping," +
-                "debugLog=true"
+                "trace=false," +
+                "debug=true," +
+                "info=true," +
+                "warn=true"
     )
 }
 

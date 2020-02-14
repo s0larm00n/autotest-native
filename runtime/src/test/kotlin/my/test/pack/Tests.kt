@@ -69,7 +69,6 @@ class Tests {
         val client = HttpClients.createDefault()!!
         val request = HttpPost("http://localhost:$port/echo")
         val response = client.execute(request)
-        println(response.allHeaders[0].toString())
         assertEquals(methodName, response.getHeaders(testNameHeaderName)[0].value)
     }
 }

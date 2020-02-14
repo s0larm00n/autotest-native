@@ -9,7 +9,7 @@ import java.util.List;
 public class AgentClassTransformer {
     private static final String GLOBAL_SPY = "com.epam.drill.auto.test.agent.GlobalSpy.self()";
 
-    public static JByteArray transform(String className, ClassLoader classLoader) {
+    public static byte[] transform(String className, ClassLoader classLoader) {
         try {
             ClassPool pool = ClassPool.getDefault();
             pool.appendClassPath(new LoaderClassPath(classLoader));
@@ -20,11 +20,7 @@ public class AgentClassTransformer {
             } catch (NotFoundException nfe) {
                 System.out.println("Class " + className + " not found by given class loader!");
             }
-            byte[] result = insertTestNames(ctClass);
-            if (result != null) {
-                return new JByteArray(result);
-            }
-            return null;
+            return insertTestNames(ctClass);
         } catch (Exception e) {
             System.out.println("Unexpected exception: " + e.getMessage());
             return null;

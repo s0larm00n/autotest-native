@@ -24,7 +24,7 @@ val presetName = when {
 val drillJvmApiLibVerison = "0.3.0"
 val serializationRuntimeVersion = "0.14.0"
 val drillHookVersion = "1.0.0"
-val drillTransportLibVerison = "0.1.2"
+val drillLogger = "0.1.0"
 
 repositories {
     mavenCentral()
@@ -52,7 +52,7 @@ kotlin {
                 implementation("com.epam.drill:jvmapi-native:$drillJvmApiLibVerison")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-native:$serializationRuntimeVersion")
                 implementation("com.epam.drill.hook:platform:$drillHookVersion")
-                implementation("com.epam.drill.transport:core:$drillTransportLibVerison")
+                implementation("com.epam.drill.logger:logger:$drillLogger")
             }
             kotlin.srcDir("src/${presetName}Main/kotlin")
         }

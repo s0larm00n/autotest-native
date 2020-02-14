@@ -16,7 +16,7 @@ fun enableJvmtiEventVmDeath(thread: jthread? = null) {
 
 @Suppress("UNUSED_PARAMETER")
 fun vmDeathEvent(jvmtiEnv: CPointer<jvmtiEnvVar>?, jniEnv: CPointer<JNIEnvVar>?) {
-    logInfo("vmDeathEvent")
+    mainLogger.debug { "vmDeathEvent" }
 }
 
 fun callbackRegister() {
@@ -52,7 +52,7 @@ fun enableJvmtiEventClassFileLoadHook(thread: jthread? = null) {
 
 @CName("jvmtiEventVMInitEvent")
 fun jvmtiEventVMInitEvent(env: CPointer<jvmtiEnvVar>?, jniEnv: CPointer<JNIEnvVar>?, thread: jthread?) {
-    logInfo("Init event")
+    mainLogger.debug { "Init event" }
     initRuntimeIfNeeded()
     enableJvmtiEventClassFileLoadHook()
     configureHooks()
@@ -61,8 +61,9 @@ fun jvmtiEventVMInitEvent(env: CPointer<jvmtiEnvVar>?, jniEnv: CPointer<JNIEnvVa
 fun configureHooks() {
     configureHttpHooks()
     addHttpWriteCallback {
-        val (lastTestName, sessionId) = sessionController { testName to sessionId }
-        println("Adding hooks: $lastTestName to $sessionId")
+        val lastTestName = sessionController.testName.value
+        val sessionId = sessionController.sessionId.value
+        mainLogger.debug { "Adding hooks: $lastTestName to $sessionId" }
         mapOf(
             "drill-test-name" to lastTestName,
             "drill-session-id" to sessionId
@@ -79,5 +80,5 @@ fun nativeMethodBind(
     address: COpaquePointer,
     newAddressPtr: CPointer<COpaquePointerVar>
 ) {
-    logInfo("Method bind event")
+    mainLogger.debug { "Method bind event" }
 }

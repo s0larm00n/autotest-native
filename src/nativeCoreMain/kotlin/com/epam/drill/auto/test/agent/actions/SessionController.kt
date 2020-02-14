@@ -7,36 +7,39 @@ import com.epam.drill.jvmapi.gen.*
 import kotlinx.cinterop.*
 import kotlin.native.concurrent.*
 
-class SessionController {
+@SharedImmutable
+val sessionController = SessionController()
 
-    var testName: String = ""
-    var sessionId: String = ""
-    lateinit var agentConfig: AgentConfig
+class SessionController {
+    val agentConfig = AtomicReference(AgentConfig().freeze()).freeze()
+    val testName = AtomicReference("")
+    val sessionId = AtomicReference("")
 
     fun startSession() {
-        logInfo("Attempting to start a Drill4J test session...")
+        mainLogger.debug { "Attempting to start a Drill4J test session..." }
         val payload = StartSession.serializer() stringify StartSession()
         val response = dispatchAction(payload)
-        logInfo("Received response: ${response.raw}")
+        mainLogger.debug { "Received response: ${response.body}" }
         val startSessionResponse = StartSessionResponse.serializer() parse response.body
-        sessionId = startSessionResponse.payload.sessionId
-        logInfo("Started a test session with ID $sessionId")
+        sessionId.value = startSessionResponse.payload.sessionId
+        mainLogger.info { "Started a test session with ID ${sessionId.value}" }
     }
 
     fun stopSession() {
-        logInfo("Attempting to stop a Drill4J test session...")
-        val payload = StopSession.serializer() stringify stopAction(sessionId)
+        mainLogger.debug { "Attempting to stop a Drill4J test session..." }
+        val payload = StopSession.serializer() stringify stopAction(sessionId.value)
         val response = dispatchAction(payload)
-        logInfo("Received response: ${response.raw}")
-        logInfo("Stopped a test session with ID $sessionId")
+        mainLogger.debug { "Received response: ${response.body}" }
+        mainLogger.info { "Stopped a test session with ID ${sessionId.value}" }
     }
 
     private fun dispatchAction(payload: String): HttpResponse {
-        val dispatchActionPath = "/api/agents/${agentConfig.agentId}/${agentConfig.pluginId}/dispatch-action"
+        val dispatchActionPath =
+            "/api/agents/${agentConfig.value.agentId}/${agentConfig.value.pluginId}/dispatch-action"
         val token = getToken()
         return Sender.post(
-            agentConfig.adminHost,
-            agentConfig.adminPort,
+            agentConfig.value.adminHost,
+            agentConfig.value.adminPort,
             dispatchActionPath,
             mapOf(
                 "Authorization" to "Bearer $token",
@@ -47,29 +50,17 @@ class SessionController {
     }
 
     private fun getToken(): String = Sender.post(
-        agentConfig.adminHost,
-        agentConfig.adminPort,
+        agentConfig.value.adminHost,
+        agentConfig.value.adminPort,
         "/api/login"
     ).headers["Authorization"] ?: error("No token received during login")
 
 }
-
-inline fun <reified T> sessionController(noinline what: SessionController.() -> T) =
-    sessionControllerWorker.execute(TransferMode.UNSAFE, { what }) {
-        it(sessionController)
-    }.result
-
-@SharedImmutable
-val sessionControllerWorker = Worker.start(true)
-
-@ThreadLocal
-val sessionController = SessionController()
 
 @Suppress("UNUSED", "UNUSED_PARAMETER")
 @CName("Java_com_epam_drill_auto_test_agent_GlobalSpy_memorizeTestName")
 fun memorizeTestName(env: CPointer<JNIEnvVar>?, thisObj: jobject, inJNIStr: jstring) {
     val testNameFromJava: String =
         env?.pointed?.pointed?.GetStringUTFChars?.invoke(env, inJNIStr, null)?.toKString() ?: ""
-    println(testNameFromJava)
-    sessionController { testName = testNameFromJava }
+    sessionController.testName.value = testNameFromJava
 }

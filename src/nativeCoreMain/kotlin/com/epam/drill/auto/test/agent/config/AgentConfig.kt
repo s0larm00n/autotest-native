@@ -7,14 +7,15 @@ import kotlinx.cinterop.*
 import kotlin.native.concurrent.*
 
 data class AgentConfig(
-    val agentId: String,
-    val pluginId: String,
-    val adminHost: String,
-    val adminPort: String,
-    val runtimePath: String,
-    val debugLog: Boolean,
-    val terminalOutput: Boolean,
-    val loggerPath: String
+    val agentId: String = "",
+    val pluginId: String = "",
+    val adminHost: String = "",
+    val adminPort: String = "",
+    val runtimePath: String = "",
+    val trace: Boolean = false,
+    val debug: Boolean = false,
+    val info: Boolean = false,
+    val warn: Boolean = false
 )
 
 const val WRONG_PARAMS = "Agent parameters are not specified correctly."
@@ -26,9 +27,10 @@ fun String?.toAgentParams() = this.asParams().let { params ->
         adminHost = params["adminHost"] ?: error(WRONG_PARAMS),
         adminPort = params["adminPort"] ?: error(WRONG_PARAMS),
         runtimePath = params["runtimePath"] ?: error(WRONG_PARAMS),
-        debugLog = params["debugLog"]?.toBoolean() ?: false,
-        terminalOutput = params["terminalOutput"]?.toBoolean() ?: false,
-        loggerPath = params["loggerPath"] ?: "logs"
+        trace = params["trace"]?.toBoolean() ?: false,
+        debug = params["debug"]?.toBoolean() ?: false,
+        info = params["info"]?.toBoolean() ?: false,
+        warn = params["warn"]?.toBoolean() ?: false
     )
 }
 
@@ -48,7 +50,7 @@ fun initAgentGlobals(vmPointer: CPointer<JavaVMVar>) {
 
 fun initAgent(additionalClassesPath: String) = memScoped {
     setUnhandledExceptionHook({ thr: Throwable ->
-        println("Unhandled event $thr")
+        mainLogger.error { "Unhandled event $thr" }
     }.freeze())
     val alloc = alloc<jvmtiCapabilities>()
     alloc.can_retransform_classes = 1.toUInt()

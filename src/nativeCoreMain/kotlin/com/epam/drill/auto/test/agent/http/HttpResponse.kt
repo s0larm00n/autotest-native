@@ -2,7 +2,7 @@ package com.epam.drill.auto.test.agent.http
 
 import com.epam.drill.auto.test.agent.*
 
-class HttpResponse(val raw: String) {
+class HttpResponse(raw: String) {
     val headers = raw.lines().map { line ->
         line.substringBefore(':').trim() to line.substringAfter(':').trim()
     }.toMap()
@@ -11,7 +11,7 @@ class HttpResponse(val raw: String) {
 
     init {
         val contentLength = headers["Content-Length"]?.toInt()
-            ?: 0.apply { logInfo("No Content-Length header in response - assuming body's length 0") }
+            ?: 0.apply { mainLogger.info { "No Content-Length header in response - assuming body's length 0" } }
         body = raw.substringAfter("\r\n\r\n").substring(0 until contentLength)
     }
 }
