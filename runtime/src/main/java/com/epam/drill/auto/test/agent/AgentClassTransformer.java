@@ -20,26 +20,49 @@ public class AgentClassTransformer {
             } catch (NotFoundException nfe) {
                 System.out.println("Class " + className + " not found by given class loader!");
             }
-            return insertTestNames(ctClass);
+            return insertTestNames(ctClass, className);
         } catch (Exception e) {
             System.out.println("Unexpected exception: " + e.getMessage());
             return null;
         }
     }
 
-    private static byte[] insertTestNames(CtClass cc) {
+    private static byte[] insertTestNames(CtClass cc, String rawClassName) {
+        try {
+            switch (SupportedClass.convert(rawClassName)) {
+                case JMETER_HTTP_SAMPLER: {
+                    return insertJMeterTestNameGathering(cc);
+                }
+                case UNDEFINED: {
+                    return insertTestNamesByAnnotations(cc);
+                }
+            }
+        } catch (CannotCompileException | IOException | NotFoundException e) {
+            System.out.println("Error while instrumenting class: " + cc.getName() + "\n Message: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private static byte[] insertJMeterTestNameGathering(CtClass cc) throws NotFoundException, CannotCompileException, IOException {
+        CtMethod setupRequestMethod = cc.getMethod(
+                "setupRequest",
+                "(Ljava/net/URL;Lorg/apache/http/client/methods/HttpRequestBase;" +
+                        "Lorg/apache/jmeter/protocol/http/sampler/HTTPSampleResult;)V"
+        );
+        setupRequestMethod.insertBefore(
+                "String drillTestName = $3.getSampleLabel();\n" +
+                        GLOBAL_SPY + ".setTestName(drillTestName);\n"
+        );
+        return cc.toBytecode();
+    }
+
+    private static byte[] insertTestNamesByAnnotations(CtClass cc) throws IOException, CannotCompileException {
         List<CtMethod> ctMethods = filterMethods(cc);
         if (ctMethods.isEmpty()) return null;
-        byte[] result = null;
-        try {
-            for (CtMethod method : ctMethods) {
-                method.insertBefore(GLOBAL_SPY + ".setTestName(\"" + method.getName() + "\");");
-            }
-            result = cc.toBytecode();
-        } catch (CannotCompileException | IOException cce) {
-            System.out.println("Could not compile class: " + cc.getName());
+        for (CtMethod method : ctMethods) {
+            method.insertBefore(GLOBAL_SPY + ".setTestName(\"" + method.getName() + "\");");
         }
-        return result;
+        return cc.toBytecode();
     }
 
     private static List<CtMethod> filterMethods(CtClass ctClass) {
@@ -64,9 +87,12 @@ public class AgentClassTransformer {
     }
 
     private static Boolean annotationSupported(String annotation) {
-        return annotation.startsWith("@org.junit.jupiter.api.Test") ||
-                annotation.startsWith("@org.junit.jupiter.params.ParameterizedTest") ||
-                annotation.startsWith("@org.testng.annotations.Test");
+        boolean result = false;
+        for (String supported : SupportedAnnotation.stringValues()) {
+            result = result || annotation.startsWith(supported);
+            if (result) break;
+        }
+        return result;
     }
 
 }
