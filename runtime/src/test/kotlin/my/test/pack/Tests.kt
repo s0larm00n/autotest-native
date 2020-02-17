@@ -7,8 +7,7 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import java.net.*
 
-const val testNameHeaderName = "drill-test-name"
-const val sessionIdHeaderName = "drill-session-id"
+const val TEST_NAME_HEADER = "drill-test-name"
 
 class Tests {
 
@@ -22,8 +21,8 @@ class Tests {
             httpServer.createContext("/echo") { t ->
                 val response = "OK"
                 t.responseHeaders.add(
-                    testNameHeaderName, t.requestHeaders.getFirst(
-                        testNameHeaderName
+                    TEST_NAME_HEADER, t.requestHeaders.getFirst(
+                        TEST_NAME_HEADER
                     ) ?: "empty"
                 )
                 t.sendResponseHeaders(200, response.toByteArray().size.toLong())
@@ -69,6 +68,6 @@ class Tests {
         val client = HttpClients.createDefault()!!
         val request = HttpPost("http://localhost:$port/echo")
         val response = client.execute(request)
-        assertEquals(methodName, response.getHeaders(testNameHeaderName)[0].value)
+        assertEquals(methodName, response.getHeaders(TEST_NAME_HEADER)[0].value)
     }
 }

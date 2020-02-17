@@ -1,16 +1,5 @@
 package com.epam.drill.auto.test.agent.http
 
-/*
-POST /cgi-bin/process.cgi HTTP/1.1
-User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)
-Host: www.tutorialspoint.com
-Content-Type: text/xml; charset=utf-8
-Content-Length: 88
-Accept-Language: en-us
-Accept-Encoding: gzip, deflate
-Connection: Keep-Alive
-*/
-
 class HttpRequest(
     host: String,
     port: String,
