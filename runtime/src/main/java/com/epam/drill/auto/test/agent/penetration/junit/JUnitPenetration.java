@@ -15,26 +15,26 @@ import java.util.Set;
 public class JUnitPenetration extends Strategy {
 
     private Set<String> supportedAnnotations = new HashSet<>();
-    private CtClass lastScannedClass;
-    private List<CtMethod> lastScannedMethods;
+    private ThreadLocal<CtClass> lastScannedClass = new ThreadLocal<>();
+    private ThreadLocal<List<CtMethod>> lastScannedMethods = new ThreadLocal<>();
 
-    public JUnitPenetration(){
+    public JUnitPenetration() {
         super();
         supportedAnnotations.add("@org.junit.jupiter.api.Test");
         supportedAnnotations.add("@org.junit.jupiter.params.ParameterizedTest");
     }
 
-    public boolean permits(CtClass ctClass){
-        lastScannedClass = ctClass;
-        lastScannedMethods = scanMethods(ctClass);
-        return !lastScannedMethods.isEmpty();
+    public boolean permit(CtClass ctClass) {
+        lastScannedClass.set(ctClass);
+        lastScannedMethods.set(scanMethods(ctClass));
+        return !lastScannedMethods.get().isEmpty();
     }
 
     public byte[] instrument() throws CannotCompileException, IOException {
-        for (CtMethod method : lastScannedMethods) {
+        for (CtMethod method : lastScannedMethods.get()) {
             method.insertBefore(AgentClassTransformer.GLOBAL_SPY + ".setTestName(\"" + method.getName() + "\");");
         }
-        return lastScannedClass.toBytecode();
+        return lastScannedClass.get().toBytecode();
     }
 
     private List<CtMethod> scanMethods(CtClass ctClass) {

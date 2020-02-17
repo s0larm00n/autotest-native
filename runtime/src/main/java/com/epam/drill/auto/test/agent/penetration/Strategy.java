@@ -8,11 +8,11 @@ import java.io.IOException;
 
 public abstract class Strategy {
 
-    public Strategy(){
-        StrategyManager.self.strategies.add(this);
+    public Strategy() {
+        StrategyManager.strategies.add(this);
     }
 
-    public abstract boolean permits(CtClass ctClass);
+    public abstract boolean permit(CtClass ctClass);
 
     public abstract byte[] instrument() throws CannotCompileException, IOException, NotFoundException;
 

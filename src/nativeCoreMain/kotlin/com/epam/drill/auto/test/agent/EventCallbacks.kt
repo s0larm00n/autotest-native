@@ -54,6 +54,7 @@ fun enableJvmtiEventClassFileLoadHook(thread: jthread? = null) {
 fun jvmtiEventVMInitEvent(env: CPointer<jvmtiEnvVar>?, jniEnv: CPointer<JNIEnvVar>?, thread: jthread?) {
     mainLogger.debug { "Init event" }
     initRuntimeIfNeeded()
+    initializeStrategyManager()
     enableJvmtiEventClassFileLoadHook()
     configureHooks()
 }
@@ -63,7 +64,7 @@ fun configureHooks() {
     addHttpWriteCallback {
         val lastTestName = sessionController.testName.value
         val sessionId = sessionController.sessionId.value
-        mainLogger.debug { "Adding hooks: $lastTestName to $sessionId" }
+        mainLogger.debug { "Adding headers: $lastTestName to $sessionId" }
         mapOf(
             "drill-test-name" to lastTestName,
             "drill-session-id" to sessionId

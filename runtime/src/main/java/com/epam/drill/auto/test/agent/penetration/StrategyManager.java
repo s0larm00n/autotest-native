@@ -13,18 +13,17 @@ import java.util.Set;
 
 public class StrategyManager {
 
-    public static StrategyManager self = new StrategyManager();
-    public Set<Strategy> strategies = new HashSet<>();
+    public static Set<Strategy> strategies = new HashSet<>();
 
-    public StrategyManager() {
+    public static void initialize() {
         new JUnitPenetration();
         new TestNGPenetration();
         new JMeterPenetration();
     }
 
     public static byte[] process(CtClass ctClass) throws NotFoundException, CannotCompileException, IOException {
-        for (Strategy strategy : self.strategies) {
-            if (strategy.permits(ctClass)) return strategy.instrument();
+        for (Strategy strategy : strategies) {
+            if (strategy.permit(ctClass)) return strategy.instrument();
         }
         return null;
     }
