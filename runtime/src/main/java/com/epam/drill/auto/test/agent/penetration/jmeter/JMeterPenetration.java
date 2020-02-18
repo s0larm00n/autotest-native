@@ -16,10 +16,6 @@ public class JMeterPenetration extends Strategy {
     private String testNameSourceClass = "org.apache.jmeter.protocol.http.sampler.HTTPHC4Impl";
     private ThreadLocal<CtClass> lastScannedClass = new ThreadLocal<>();
 
-    public JMeterPenetration() {
-        super();
-    }
-
     public boolean permit(CtClass ctClass) {
         return ctClass.getName().equals(testNameSourceClass);
     }

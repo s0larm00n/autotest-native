@@ -19,7 +19,6 @@ public class JUnitPenetration extends Strategy {
     private ThreadLocal<List<CtMethod>> lastScannedMethods = new ThreadLocal<>();
 
     public JUnitPenetration() {
-        super();
         supportedAnnotations.add("@org.junit.jupiter.api.Test");
         supportedAnnotations.add("@org.junit.jupiter.params.ParameterizedTest");
     }

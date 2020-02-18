@@ -19,7 +19,6 @@ public class TestNGPenetration extends Strategy {
     private ThreadLocal<List<CtMethod>> lastScannedMethods = new ThreadLocal<>();
 
     public TestNGPenetration() {
-        super();
         supportedAnnotations.add("@org.testng.annotations.Test");
     }
 

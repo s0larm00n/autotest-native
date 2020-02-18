@@ -16,9 +16,9 @@ public class StrategyManager {
     public static Set<Strategy> strategies = new HashSet<>();
 
     public static void initialize() {
-        new JUnitPenetration();
-        new TestNGPenetration();
-        new JMeterPenetration();
+        strategies.add(new JUnitPenetration());
+        strategies.add(new TestNGPenetration());
+        strategies.add(new JMeterPenetration());
     }
 
     public static byte[] process(CtClass ctClass) throws NotFoundException, CannotCompileException, IOException {
