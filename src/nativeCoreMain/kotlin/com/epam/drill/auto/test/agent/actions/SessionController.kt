@@ -26,7 +26,8 @@ class SessionController {
         val response = dispatchAction(payload)
         mainLogger.debug { "Received response: ${response.body}" }
         val startSessionResponse = StartSessionResponse.serializer() parse response.body
-        sessionId.value = startSessionResponse.data.payload.sessionId
+        val startSessionResponseData = StartSessionResponseData.serializer() parse startSessionResponse.data
+        sessionId.value = startSessionResponseData.payload.sessionId
         mainLogger.info { "Started a test session with ID ${sessionId.value}" }
     }
 

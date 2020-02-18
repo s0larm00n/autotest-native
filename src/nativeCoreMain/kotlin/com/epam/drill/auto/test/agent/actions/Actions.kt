@@ -14,7 +14,7 @@ data class StartSession(val type: String = Actions.START.name, val payload: Star
 data class StartPayload(val testType: String = "AUTO", val sessionId: String = "")
 
 @Serializable
-data class StartSessionResponse(val code: Int, val data: StartSessionResponseData)
+data class StartSessionResponse(val code: Int, val data: String)
 
 @Serializable
 data class StartSessionResponseData(val type: String, val payload: StartResponsePayload)
