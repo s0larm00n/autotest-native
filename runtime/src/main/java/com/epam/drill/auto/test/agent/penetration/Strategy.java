@@ -10,6 +10,6 @@ public abstract class Strategy {
 
     public abstract boolean permit(CtClass ctClass);
 
-    public abstract byte[] instrument() throws CannotCompileException, IOException, NotFoundException;
+    public abstract byte[] instrument(CtClass ctClass) throws CannotCompileException, IOException, NotFoundException;
 
 }

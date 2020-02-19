@@ -1,5 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.*
 import org.apache.tools.ant.taskdefs.condition.*
+import org.jetbrains.kotlin.gradle.tasks.*
 
 plugins {
     id("com.github.johnrengelman.shadow") version "5.1.0"
@@ -33,15 +33,14 @@ tasks.named<Test>("test") {
     val agentPath = "${rootDir.absolutePath}/build/bin/nativeCore/testDebugShared/test.$suffix"
     val runtimePath = "${rootDir.absolutePath}/runtime/build/libs"
     useJUnitPlatform()
-    systemProperty("petclinic.url", "localhost:8080")
     jvmArgs = listOf(
         "-agentpath:$agentPath=" +
                 "runtimePath=$runtimePath," +
-                "adminHost=localhost," +
+                "adminHost=ecse0050029e.epam.com," +
                 "adminPort=8090," +
-                "agentId=Petclinic," +
+                "agentId=petclinic-standalone," +
                 "pluginId=test-to-code-mapping," +
-                "serviceGroupId=petclinic-services" +
+                //"serviceGroupId=petclinic-services" +
                 "trace=false," +
                 "debug=true," +
                 "info=true," +

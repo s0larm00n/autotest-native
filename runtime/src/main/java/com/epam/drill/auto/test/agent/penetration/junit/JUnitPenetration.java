@@ -15,7 +15,6 @@ import java.util.Set;
 public class JUnitPenetration extends Strategy {
 
     private Set<String> supportedAnnotations = new HashSet<>();
-    private ThreadLocal<CtClass> lastScannedClass = new ThreadLocal<>();
     private ThreadLocal<List<CtMethod>> lastScannedMethods = new ThreadLocal<>();
 
     public JUnitPenetration() {
@@ -24,16 +23,15 @@ public class JUnitPenetration extends Strategy {
     }
 
     public boolean permit(CtClass ctClass) {
-        lastScannedClass.set(ctClass);
         lastScannedMethods.set(scanMethods(ctClass));
         return !lastScannedMethods.get().isEmpty();
     }
 
-    public byte[] instrument() throws CannotCompileException, IOException {
+    public byte[] instrument(CtClass ctClass) throws CannotCompileException, IOException {
         for (CtMethod method : lastScannedMethods.get()) {
             method.insertBefore(AgentClassTransformer.GLOBAL_SPY + ".setTestName(\"" + method.getName() + "\");");
         }
-        return lastScannedClass.get().toBytecode();
+        return ctClass.toBytecode();
     }
 
     private List<CtMethod> scanMethods(CtClass ctClass) {

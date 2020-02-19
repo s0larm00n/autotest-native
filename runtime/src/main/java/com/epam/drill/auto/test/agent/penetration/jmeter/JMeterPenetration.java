@@ -14,14 +14,13 @@ import static com.epam.drill.auto.test.agent.AgentClassTransformer.GLOBAL_SPY;
 public class JMeterPenetration extends Strategy {
 
     private String testNameSourceClass = "org.apache.jmeter.protocol.http.sampler.HTTPHC4Impl";
-    private ThreadLocal<CtClass> lastScannedClass = new ThreadLocal<>();
 
     public boolean permit(CtClass ctClass) {
         return ctClass.getName().equals(testNameSourceClass);
     }
 
-    public byte[] instrument() throws CannotCompileException, IOException, NotFoundException {
-        CtMethod setupRequestMethod = lastScannedClass.get().getMethod(
+    public byte[] instrument(CtClass ctClass) throws CannotCompileException, IOException, NotFoundException {
+        CtMethod setupRequestMethod = ctClass.getMethod(
                 "setupRequest",
                 "(Ljava/net/URL;Lorg/apache/http/client/methods/HttpRequestBase;" +
                         "Lorg/apache/jmeter/protocol/http/sampler/HTTPSampleResult;)V"
@@ -30,7 +29,7 @@ public class JMeterPenetration extends Strategy {
                 "String drillTestName = $3.getSampleLabel();\n" +
                         GLOBAL_SPY + ".setTestName(drillTestName);\n"
         );
-        return lastScannedClass.get().toBytecode();
+        return ctClass.toBytecode();
     }
 
 }
