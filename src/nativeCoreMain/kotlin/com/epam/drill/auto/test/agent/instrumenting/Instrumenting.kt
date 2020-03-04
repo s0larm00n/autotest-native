@@ -48,11 +48,11 @@ val transformerClass: jclass
     get() = FindClass("com/epam/drill/auto/test/agent/AgentClassTransformer")
         ?: error("No AgentClassTransformer class!")
 
-fun initializeStrategyManager() {
+fun initializeStrategyManager(rawFrameworkPlugins: String) {
     val managerClass = FindClass("com/epam/drill/auto/test/agent/penetration/StrategyManager")
         ?: error("No StrategyManager class!")
-    val initialize: jmethodID? = GetStaticMethodID(managerClass, "initialize", "()V")
-    CallStaticObjectMethod(managerClass, initialize)
+    val initialize: jmethodID? = GetStaticMethodID(managerClass, "initialize", "(Ljava/lang/String;)V")
+    CallStaticObjectMethod(managerClass, initialize, NewStringUTF(rawFrameworkPlugins))
 }
 
 fun transform(classLoader: jobject?, className: String): ByteArray? {

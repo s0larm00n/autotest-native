@@ -42,7 +42,7 @@ fun callbackRegister() = memScoped {
 fun jvmtiEventVMInitEvent(env: CPointer<jvmtiEnvVar>?, jniEnv: CPointer<JNIEnvVar>?, thread: jthread?) {
     mainLogger.debug { "Init event" }
     initRuntimeIfNeeded()
-    initializeStrategyManager()
+    initializeStrategyManager(sessionController.agentConfig.value.rawFrameworkPlugins)
     SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, null)
     configureHooks()
 }

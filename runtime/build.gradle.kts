@@ -44,7 +44,8 @@ tasks.named<Test>("test") {
                 "trace=false," +
                 "debug=true," +
                 "info=true," +
-                "warn=true"
+                "warn=true," +
+                "plugins=junit"
     )
 }
 

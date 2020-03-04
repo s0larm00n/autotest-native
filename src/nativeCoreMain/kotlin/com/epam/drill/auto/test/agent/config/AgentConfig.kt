@@ -17,7 +17,8 @@ data class AgentConfig(
     val trace: Boolean = false,
     val debug: Boolean = false,
     val info: Boolean = false,
-    val warn: Boolean = false
+    val warn: Boolean = false,
+    val rawFrameworkPlugins: String = ""
 )
 
 const val WRONG_PARAMS = "Agent parameters are not specified correctly."
@@ -33,7 +34,8 @@ fun String?.toAgentParams() = this.asParams().let { params ->
         trace = params["trace"]?.toBoolean() ?: false,
         debug = params["debug"]?.toBoolean() ?: false,
         info = params["info"]?.toBoolean() ?: false,
-        warn = params["warn"]?.toBoolean() ?: false
+        warn = params["warn"]?.toBoolean() ?: false,
+        rawFrameworkPlugins = params["plugins"] ?: ""
     )
     if (result.agentId.isBlank() && result.serviceGroup.isBlank()) {
         error(WRONG_PARAMS)
