@@ -11,7 +11,16 @@ import kotlinx.cinterop.*
 @CName("enableJvmtiEventVmDeath")
 fun enableJvmtiEventVmDeath(thread: jthread? = null) {
     SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_VM_DEATH, thread)
-    gdata?.pointed?.IS_JVMTI_EVENT_VM_DEATH = true
+}
+
+@CName("enableJvmtiEventVmInit")
+fun enableJvmtiEventVmInit(thread: jthread? = null) {
+    SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_VM_INIT, thread)
+}
+
+@CName("enableJvmtiEventClassFileLoadHook")
+fun enableJvmtiEventClassFileLoadHook(thread: jthread? = null) {
+    SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, thread)
 }
 
 @Suppress("UNUSED_PARAMETER")
@@ -19,35 +28,14 @@ fun vmDeathEvent(jvmtiEnv: CPointer<jvmtiEnvVar>?, jniEnv: CPointer<JNIEnvVar>?)
     mainLogger.debug { "vmDeathEvent" }
 }
 
-fun callbackRegister() {
-    generateDefaultCallbacks().useContents {
-        ClassFileLoadHook = staticCFunction(::classFileLoadHookEvent)
-        SetEventCallbacks(this.ptr, sizeOf<jvmtiEventCallbacks>().toInt())
-        null
-    }
-    SetEventCallbacks(gjavaVMGlob?.pointed?.callbackss?.ptr, sizeOf<jvmtiEventCallbacks>().toInt())
-    gjavaVMGlob?.pointed?.callbackss?.VMDeath = staticCFunction(::vmDeathEvent)
-    enableJvmtiEventVmDeath()
+fun callbackRegister() = memScoped {
+    val eventCallbacks = alloc<jvmtiEventCallbacks>()
+    eventCallbacks.VMInit = staticCFunction(::jvmtiEventVMInitEvent)
+    eventCallbacks.VMDeath = staticCFunction(::vmDeathEvent)
+    eventCallbacks.ClassFileLoadHook = staticCFunction(::classFileLoadHookEvent)
+    SetEventCallbacks(eventCallbacks.ptr, sizeOf<jvmtiEventCallbacks>().toInt())
     enableJvmtiEventVmInit()
-    enableJvmtiEventNativeMethodBind()
-}
-
-@CName("enableJvmtiEventVmInit")
-fun enableJvmtiEventVmInit(thread: jthread? = null) {
-    SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_VM_INIT, thread)
-    gdata?.pointed?.IS_JVMTI_EVENT_VM_INIT = true
-}
-
-@CName("enableJvmtiEventNativeMethodBind")
-fun enableJvmtiEventNativeMethodBind(thread: jthread? = null) {
-    SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_NATIVE_METHOD_BIND, thread)
-    gdata?.pointed?.IS_JVMTI_EVENT_NATIVE_METHOD_BIND = true
-}
-
-@CName("enableJvmtiEventClassFileLoadHook")
-fun enableJvmtiEventClassFileLoadHook(thread: jthread? = null) {
-    SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, thread)
-    gdata?.pointed?.IS_JVMTI_EVENT_CLASS_FILE_LOAD_HOOK = true
+    enableJvmtiEventVmDeath()
 }
 
 @CName("jvmtiEventVMInitEvent")
@@ -55,7 +43,7 @@ fun jvmtiEventVMInitEvent(env: CPointer<jvmtiEnvVar>?, jniEnv: CPointer<JNIEnvVa
     mainLogger.debug { "Init event" }
     initRuntimeIfNeeded()
     initializeStrategyManager()
-    enableJvmtiEventClassFileLoadHook()
+    SetEventNotificationMode(JVMTI_ENABLE, JVMTI_EVENT_CLASS_FILE_LOAD_HOOK, null)
     configureHooks()
 }
 

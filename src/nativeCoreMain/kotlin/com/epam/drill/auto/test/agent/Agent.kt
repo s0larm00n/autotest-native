@@ -17,11 +17,10 @@ val mainLogger = KotlinLogging.logger("AutoTestAgentLogger")
 @CName("Agent_OnLoad")
 fun agentOnLoad(vmPointer: CPointer<JavaVMVar>, options: String, reservedPtr: Long): jint = memScoped {
     try {
-        val config = options.toAgentParams()
-        initAgentGlobals(vmPointer)
-        initAgent(config.runtimePath)
-        logConfig.value = LoggerConfig(config.trace, config.debug, config.info, config.warn).freeze()
-        sessionController.agentConfig.value = config.freeze()
+        val agentConfig = options.toAgentParams().freeze()
+        vmPointer.initAgent(agentConfig.runtimePath)
+        logConfig.value = agentConfig.extractLoggerConfig()
+        sessionController.agentConfig.value = agentConfig
         sessionController.startSession()
     } catch (ex: Throwable) {
         mainLogger.error { "Can't load the agent. Reason: ${ex.message}" }
@@ -36,6 +35,6 @@ fun agentOnUnload(vmPointer: CPointer<JavaVMVar>) {
         removeHttpHook()
         sessionController.stopSession()
     } catch (ex: Throwable) {
-        mainLogger.error { "Failed unloading the agent properly. Ex: ${ex.message}" }
+        mainLogger.error { "Failed to unload the agent properly. Reason: ${ex.message}" }
     }
 }

@@ -36,11 +36,11 @@ tasks.named<Test>("test") {
     jvmArgs = listOf(
         "-agentpath:$agentPath=" +
                 "runtimePath=$runtimePath," +
-                "adminHost=ecse0050029e.epam.com," +
+                "adminHost=localhost," +
                 "adminPort=8090," +
-                "agentId=petclinic-standalone," +
-                "pluginId=test-to-code-mapping," +
-                //"serviceGroupId=petclinic-services" +
+                "agentId=Petclinic2," +
+                "pluginId=test2code," +
+                "serviceGroupId=aaabbb" +
                 "trace=false," +
                 "debug=true," +
                 "info=true," +

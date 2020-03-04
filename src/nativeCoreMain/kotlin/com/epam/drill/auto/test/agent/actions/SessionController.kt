@@ -17,8 +17,8 @@ class SessionController {
 
     private val dispatchActionPath: String
         get() = if (agentConfig.value.serviceGroup.isBlank()) {
-            "/api/agents/${agentConfig.value.agentId}/${agentConfig.value.pluginId}/dispatch-action"
-        } else "/api/service-group/${agentConfig.value.serviceGroup}/plugin/${agentConfig.value.pluginId}/dispatch-action"
+            "/api/agents/${agentConfig.value.agentId}/plugins/${agentConfig.value.pluginId}/dispatch-action"
+        } else "/api/service-group/${agentConfig.value.serviceGroup}/plugins/${agentConfig.value.pluginId}/dispatch-action"
 
     fun startSession() {
         mainLogger.debug { "Attempting to start a Drill4J test session..." }

@@ -1,6 +1,6 @@
 import org.apache.tools.ant.taskdefs.condition.Os.*
-import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 plugins {
     kotlin("multiplatform") version "1.3.60"
@@ -23,10 +23,10 @@ val presetName = when {
     else -> throw RuntimeException("Target ${System.getProperty("os.name")} is not supported")
 }
 
-val drillJvmApiLibVerison = "0.3.0"
+val drillJvmApiLibVersion = "0.4.0"
 val serializationRuntimeVersion = "0.14.0"
-val drillHookVersion = "1.0.0"
 val drillLogger = "0.1.0"
+val drillHookVersion = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -51,7 +51,7 @@ kotlin {
     sourceSets {
         named("nativeCoreMain") {
             dependencies {
-                implementation("com.epam.drill:jvmapi-native:$drillJvmApiLibVerison")
+                implementation("com.epam.drill:jvmapi-native:$drillJvmApiLibVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-native:$serializationRuntimeVersion")
                 implementation("com.epam.drill.hook:platform:$drillHookVersion")
                 implementation("com.epam.drill.logger:logger:$drillLogger")

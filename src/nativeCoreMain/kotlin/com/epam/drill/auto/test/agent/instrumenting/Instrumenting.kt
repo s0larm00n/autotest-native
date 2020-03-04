@@ -19,6 +19,7 @@ fun classFileLoadHookEvent(
     newClassDataLen: CPointer<jintVar>?,
     newData: CPointer<CPointerVar<UByteVar>>?
 ) {
+    initRuntimeIfNeeded()
     val className = kClassName?.toKString()
     if (notSuitableClass(loader, protection_domain, className, classData)) return
     mainLogger.debug { "Scanning class: $className" }
@@ -42,7 +43,6 @@ private fun notSuitableClass(
     classData: CPointer<UByteVar>?
 ): Boolean =
     loader == null || protection_domain == null || className == null || classData == null
-
 
 val transformerClass: jclass
     get() = FindClass("com/epam/drill/auto/test/agent/AgentClassTransformer")

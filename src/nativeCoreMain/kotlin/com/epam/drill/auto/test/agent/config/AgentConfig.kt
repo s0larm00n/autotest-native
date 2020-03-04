@@ -3,6 +3,7 @@ package com.epam.drill.auto.test.agent.config
 import com.epam.drill.auto.test.agent.*
 import com.epam.drill.jvmapi.*
 import com.epam.drill.jvmapi.gen.*
+import com.epam.drill.logger.*
 import kotlinx.cinterop.*
 import kotlin.native.concurrent.*
 
@@ -22,8 +23,8 @@ data class AgentConfig(
 const val WRONG_PARAMS = "Agent parameters are not specified correctly."
 
 fun String?.toAgentParams() = this.asParams().let { params ->
-    AgentConfig(
-        agentId = params["agentId"] ?: error(WRONG_PARAMS),
+    val result = AgentConfig(
+        agentId = params["agentId"] ?: "",
         serviceGroup = params["serviceGroup"] ?: "",
         pluginId = params["pluginId"] ?: error(WRONG_PARAMS),
         adminHost = params["adminHost"] ?: error(WRONG_PARAMS),
@@ -34,6 +35,10 @@ fun String?.toAgentParams() = this.asParams().let { params ->
         info = params["info"]?.toBoolean() ?: false,
         warn = params["warn"]?.toBoolean() ?: false
     )
+    if (result.agentId.isBlank() && result.serviceGroup.isBlank()) {
+        error(WRONG_PARAMS)
+    }
+    result
 }
 
 fun String?.asParams(): Map<String, String> = try {
@@ -45,23 +50,17 @@ fun String?.asParams(): Map<String, String> = try {
     throw IllegalArgumentException(WRONG_PARAMS)
 }
 
-fun initAgentGlobals(vmPointer: CPointer<JavaVMVar>) {
-    agentSetup(vmPointer.pointed.value)
-    saveVmToGlobal(vmPointer)
-}
-
-fun initAgent(additionalClassesPath: String) = memScoped {
+fun CPointer<JavaVMVar>.initAgent(additionalClassesPath: String) = memScoped {
+    initAgentGlobals()
     setUnhandledExceptionHook({ thr: Throwable ->
         mainLogger.error { "Unhandled event $thr" }
     }.freeze())
-    val alloc = alloc<jvmtiCapabilities>()
-    alloc.can_retransform_classes = 1.toUInt()
-    alloc.can_retransform_any_class = 1.toUInt()
-    alloc.can_generate_native_method_bind_events = 1.toUInt()
-    alloc.can_maintain_original_method_order = 1.toUInt()
-    AddCapabilities(alloc.ptr)
-    val cl = "$additionalClassesPath/runtime-all.jar"
-    AddToBootstrapClassLoaderSearch(cl)
+    val jvmtiCapabilities = alloc<jvmtiCapabilities>()
+    jvmtiCapabilities.can_retransform_classes = 1.toUInt()
+    jvmtiCapabilities.can_retransform_any_class = 1.toUInt()
+    jvmtiCapabilities.can_maintain_original_method_order = 1.toUInt()
+    AddCapabilities(jvmtiCapabilities.ptr)
+    AddToBootstrapClassLoaderSearch("$additionalClassesPath/runtime-all.jar")
     callbackRegister()
 }
 
@@ -79,3 +78,17 @@ fun checkEx(errCode: jvmtiError, funName: String): jvmtiError {
 fun currentEnvs(): JNIEnvPointer {
     return com.epam.drill.jvmapi.currentEnvs()
 }
+
+fun CPointer<JavaVMVar>.initAgentGlobals() {
+    vmGlobal.value = freeze()
+    setJvmti(pointed)
+}
+
+private fun setJvmti(vm: JavaVMVar) = memScoped {
+    val jvmtiEnvPtr = alloc<CPointerVar<jvmtiEnvVar>>()
+    vm.value!!.pointed.GetEnv!!(vm.ptr, jvmtiEnvPtr.ptr.reinterpret(), JVMTI_VERSION.convert())
+    jvmti.value = jvmtiEnvPtr.value
+    jvmtiEnvPtr.value.freeze()
+}
+
+fun AgentConfig.extractLoggerConfig() = LoggerConfig(trace, debug, info, warn).freeze()
