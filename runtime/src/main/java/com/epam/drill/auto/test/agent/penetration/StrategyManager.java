@@ -24,6 +24,9 @@ public class StrategyManager {
         for (String plugin : plugins) {
             matchStrategy(plugin);
         }
+        if (strategies.isEmpty()) {
+            enableAllStrategies();
+        }
     }
 
     public static byte[] process(CtClass ctClass) throws NotFoundException, CannotCompileException, IOException {
@@ -48,6 +51,12 @@ public class StrategyManager {
                 break;
             }
         }
+    }
+
+    private static void enableAllStrategies() {
+        strategies.add(new JUnitPenetration());
+        strategies.add(new JMeterPenetration());
+        strategies.add(new TestNGPenetration());
     }
 
 }
