@@ -45,6 +45,8 @@ tasks.named<Test>("test") {
                 "debug=true," +
                 "info=true," +
                 "warn=true," +
+                //plugins: junit, jmeter, testng. usage: [ plugins=junit;jmeter ]
+                //by default all 3 plugins are active
                 "plugins=junit"
     )
 }
