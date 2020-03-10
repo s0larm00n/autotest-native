@@ -61,7 +61,7 @@ class SessionController {
 }
 
 @Suppress("UNUSED", "UNUSED_PARAMETER")
-@CName("Java_com_epam_drill_auto_test_agent_GlobalSpy_memorizeTestName")
+@CName("Java_com_epam_drill_auto_test_agent_AgentClassTransformer_memorizeTestName")
 fun memorizeTestName(env: CPointer<JNIEnvVar>?, thisObj: jobject, inJNIStr: jstring) {
     val testNameFromJava: String =
         env?.pointed?.pointed?.GetStringUTFChars?.invoke(env, inJNIStr, null)?.toKString() ?: ""

@@ -1,5 +1,6 @@
 package com.epam.drill.auto.test.agent.penetration.jmeter;
 
+import com.epam.drill.auto.test.agent.AgentClassTransformer;
 import com.epam.drill.auto.test.agent.penetration.Strategy;
 import javassist.CannotCompileException;
 import javassist.CtClass;
@@ -8,7 +9,6 @@ import javassist.NotFoundException;
 
 import java.io.IOException;
 
-import static com.epam.drill.auto.test.agent.AgentClassTransformer.GLOBAL_SPY;
 
 @SuppressWarnings("all")
 public class JMeterPenetration extends Strategy {
@@ -27,7 +27,7 @@ public class JMeterPenetration extends Strategy {
         );
         setupRequestMethod.insertBefore(
                 "String drillTestName = $3.getSampleLabel();\n" +
-                        GLOBAL_SPY + ".memorizeTestName(drillTestName);\n"
+                        AgentClassTransformer.CLASS_NAME + ".memorizeTestName(drillTestName);\n"
         );
         return ctClass.toBytecode();
     }

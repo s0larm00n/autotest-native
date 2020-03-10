@@ -29,7 +29,7 @@ public class JUnitPenetration extends Strategy {
 
     public byte[] instrument(CtClass ctClass) throws CannotCompileException, IOException {
         for (CtMethod method : lastScannedMethods.get()) {
-            method.insertBefore(AgentClassTransformer.GLOBAL_SPY + ".memorizeTestName(\"" + method.getName() + "\");");
+            method.insertBefore(AgentClassTransformer.CLASS_NAME + ".memorizeTestName(\"" + method.getName() + "\");");
         }
         return ctClass.toBytecode();
     }

@@ -7,7 +7,10 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 
 public class AgentClassTransformer {
-    public static final String GLOBAL_SPY = "com.epam.drill.auto.test.agent.GlobalSpy.self()";
+
+    public static final String CLASS_NAME = "com.epam.drill.auto.test.agent.AgentClassTransformer";
+
+    public static native void memorizeTestName(String testName);
 
     public static byte[] transform(String className, ClassLoader classLoader) {
         try {
