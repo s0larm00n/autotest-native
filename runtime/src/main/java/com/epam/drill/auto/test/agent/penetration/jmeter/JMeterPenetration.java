@@ -27,7 +27,7 @@ public class JMeterPenetration extends Strategy {
         );
         setupRequestMethod.insertBefore(
                 "String drillTestName = $3.getSampleLabel();\n" +
-                        GLOBAL_SPY + ".setTestName(drillTestName);\n"
+                        GLOBAL_SPY + ".memorizeTestName(drillTestName);\n"
         );
         return ctClass.toBytecode();
     }
