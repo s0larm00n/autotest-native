@@ -4,9 +4,10 @@ package com.epam.drill.auto.test.agent
 
 import com.epam.drill.auto.test.agent.actions.*
 import com.epam.drill.auto.test.agent.instrumenting.*
-import com.epam.drill.hook.http.*
+import com.epam.drill.interceptor.*
 import com.epam.drill.jvmapi.gen.*
 import kotlinx.cinterop.*
+import kotlin.native.concurrent.*
 
 @CName("enableJvmtiEventVmDeath")
 fun enableJvmtiEventVmDeath(thread: jthread? = null) {
@@ -48,8 +49,10 @@ fun jvmtiEventVMInitEvent(env: CPointer<jvmtiEnvVar>?, jniEnv: CPointer<JNIEnvVa
 }
 
 fun configureHooks() {
-    configureHttpHooks()
-    addHttpWriteCallback {
+    configureHttpInterceptor()
+    mainLogger.debug { "Interceptor configured" }
+    headersForInject.value = {
+        mainLogger.debug { "Injecting headers" }
         val lastTestName = sessionController.testName.value
         val sessionId = sessionController.sessionId.value
         mainLogger.debug { "Adding headers: $lastTestName to $sessionId" }
@@ -57,7 +60,7 @@ fun configureHooks() {
             "drill-test-name" to lastTestName,
             "drill-session-id" to sessionId
         )
-    }
+    }.freeze()
 }
 
 @CName("jvmtiEventNativeMethodBindEvent")

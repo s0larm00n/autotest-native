@@ -4,7 +4,6 @@ package com.epam.drill.auto.test.agent
 
 import com.epam.drill.auto.test.agent.actions.*
 import com.epam.drill.auto.test.agent.config.*
-import com.epam.drill.hook.http.*
 import com.epam.drill.jvmapi.gen.*
 import com.epam.drill.logger.*
 import kotlinx.cinterop.*
@@ -32,7 +31,6 @@ fun agentOnLoad(vmPointer: CPointer<JavaVMVar>, options: String, reservedPtr: Lo
 fun agentOnUnload(vmPointer: CPointer<JavaVMVar>) {
     try {
         mainLogger.info { "Shutting the agent down" }
-        removeHttpHook()
         sessionController.stopSession()
     } catch (ex: Throwable) {
         mainLogger.error { "Failed to unload the agent properly. Reason: ${ex.message}" }

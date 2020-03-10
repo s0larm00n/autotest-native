@@ -26,7 +26,7 @@ val presetName = when {
 val drillJvmApiLibVersion = "0.4.0"
 val serializationRuntimeVersion = "0.14.0"
 val drillLogger = "0.1.0"
-val drillHookVersion = "1.0.0"
+val drillHttpInterceptorVersion = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -53,14 +53,14 @@ kotlin {
             dependencies {
                 implementation("com.epam.drill:jvmapi-native:$drillJvmApiLibVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-native:$serializationRuntimeVersion")
-                implementation("com.epam.drill.hook:platform:$drillHookVersion")
+                implementation("com.epam.drill.interceptor:http:$drillHttpInterceptorVersion")
                 implementation("com.epam.drill.logger:logger:$drillLogger")
             }
             kotlin.srcDir("src/${presetName}Main/kotlin")
         }
         named("nativeCoreTest") {
             dependencies {
-                implementation("com.epam.drill.hook:platform:$drillHookVersion")
+                implementation("com.epam.drill.interceptor:http:$drillHttpInterceptorVersion")
             }
         }
     }

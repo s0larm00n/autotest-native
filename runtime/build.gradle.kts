@@ -38,9 +38,9 @@ tasks.named<Test>("test") {
                 "runtimePath=$runtimePath," +
                 "adminHost=localhost," +
                 "adminPort=8090," +
-                "agentId=Petclinic2," +
+                "agentId=Petclinic," +
                 "pluginId=test2code," +
-                "serviceGroupId=aaabbb" +
+                //"serviceGroupId=aaabbb" +
                 "trace=false," +
                 "debug=true," +
                 "info=true," +
