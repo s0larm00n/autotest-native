@@ -12,9 +12,9 @@ public class AgentClassTransformer {
 
     public static native void memorizeTestName(String testName);
 
-    public static byte[] transform(String className, ClassLoader classLoader) {
+    public static byte[] transform(String className, byte[] classBytes) {
         try {
-            CtClass ctClass = getCtClass(className, classLoader);
+            CtClass ctClass = getCtClass(className, classBytes);
             return insertTestNames(ctClass);
         } catch (Exception e) {
             System.out.println("Unexpected exception: " + e.getMessage());
@@ -33,11 +33,11 @@ public class AgentClassTransformer {
     }
 
     @Nullable
-    private static CtClass getCtClass(String className, ClassLoader classLoader) {
+    private static CtClass getCtClass(String className, byte[] classBytes) {
         ClassPool pool = ClassPool.getDefault();
-        pool.appendClassPath(new LoaderClassPath(classLoader));
         CtClass ctClass = null;
         try {
+            pool.insertClassPath(new ByteArrayClassPath(className, classBytes));
             ctClass = pool.get(formatClassName(className));
 
         } catch (NotFoundException nfe) {

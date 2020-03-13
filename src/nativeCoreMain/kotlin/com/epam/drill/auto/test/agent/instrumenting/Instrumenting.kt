@@ -24,7 +24,7 @@ fun classFileLoadHookEvent(
     if (notSuitableClass(loader, protection_domain, className, classData)) return
     mainLogger.debug { "Scanning class: $className" }
     val instrumentedBytes =
-        transform(loader, className!!) ?: return
+        transform(classData, className!!) ?: return
     val instrumentedSize = instrumentedBytes.size
     mainLogger.debug { "Applying instrumenting (old: $classDataLen to new: $instrumentedSize)" }
     Allocate(instrumentedSize.toLong(), newData)
@@ -55,13 +55,13 @@ fun initializeStrategyManager(rawFrameworkPlugins: String) {
     CallStaticObjectMethod(managerClass, initialize, NewStringUTF(rawFrameworkPlugins))
 }
 
-fun transform(classLoader: jobject?, className: String): ByteArray? {
+fun transform(classBytes: CPointer<UByteVar>?, className: String): ByteArray? {
     val transform: jmethodID? = GetStaticMethodID(
         transformerClass,
         "transform",
-        "(Ljava/lang/String;Ljava/lang/ClassLoader;)[B"
+        "(Ljava/lang/String;[B)[B"
     )
-    return CallStaticObjectMethod(transformerClass, transform, NewStringUTF(className), classLoader).toByteArray()
+    return CallStaticObjectMethod(transformerClass, transform, NewStringUTF(className), classBytes).toByteArray()
 }
 
 fun jobject?.toByteArray(): ByteArray? = this?.run {
